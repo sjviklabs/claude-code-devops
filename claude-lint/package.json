@@ -1,0 +1,31 @@
+{
+  "name": "@sjviklabs/claude-lint",
+  "version": "0.1.0",
+  "description": "Lint and score your CLAUDE.md for instruction budget, credential leaks, vague rules, and section coverage",
+  "bin": {
+    "claude-lint": "./bin/claude-lint.js"
+  },
+  "main": "./src/index.js",
+  "type": "module",
+  "files": [
+    "bin/",
+    "src/"
+  ],
+  "keywords": [
+    "claude",
+    "claude-code",
+    "claude-md",
+    "linter",
+    "devops",
+    "ai-config"
+  ],
+  "author": "SJVIK Labs <stevenjvik.me@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sjviklabs/claude-code-devops"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

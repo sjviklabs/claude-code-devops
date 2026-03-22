@@ -4,6 +4,22 @@ Battle-tested CLAUDE.md templates, skills, and hooks from a production homelab r
 
 Not theory. These are the actual configs behind [SJVIK Labs](https://github.com/sjviklabs).
 
+## Lint Your CLAUDE.md
+
+Score your existing CLAUDE.md for instruction budget, credential leaks, vague rules, and section coverage:
+
+```bash
+npx @sjviklabs/claude-lint
+```
+
+Or point it at a specific file:
+
+```bash
+npx @sjviklabs/claude-lint ./CLAUDE.md
+```
+
+Outputs a scored report (0-100) with actionable findings. Exit code 1 if score < 40.
+
 ## Quick Start
 
 1. Copy a template from `templates/claude-md/` to `~/.claude/CLAUDE.md`
@@ -28,6 +44,12 @@ Not theory. These are the actual configs behind [SJVIK Labs](https://github.com/
 | [commit](skills/commit/) | Conventional commits with scope detection, HEREDOC formatting, safety checks    |
 | [debug](skills/debug/)   | Scientific method debugging: Observe, Hypothesize, Test, Fix, Document          |
 | [deploy](skills/deploy/) | Pre-flight checks, versioned tagging, deployment execution, rollback procedures |
+
+### Linter
+
+| Tool                        | What It Does                                                                              |
+| --------------------------- | ----------------------------------------------------------------------------------------- |
+| [claude-lint](claude-lint/) | Score your CLAUDE.md: instruction budget, credential leaks, vague rules, section coverage |
 
 ### Hooks
 
