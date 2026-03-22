@@ -1,0 +1,23 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "description": "Block commits of files containing secrets",
+        "command": "bash -c 'echo \"$CLAUDE_TOOL_INPUT\" | grep -qiE \"(api[_-]?key|secret|password|token|credential)\\s*[:=]\\s*[\\x27\\\"][^\\x27\\\"]+\" && echo \"BLOCKED: File appears to contain hardcoded secrets. Use environment variables instead.\" && exit 1 || exit 0'"
+      },
+      {
+        "matcher": "Bash",
+        "description": "Block dangerous destructive commands",
+        "command": "bash -c 'echo \"$CLAUDE_TOOL_INPUT\" | grep -qiE \"(rm -rf /|drop database|git push.*--force.*main|docker system prune -a)\" && echo \"BLOCKED: Destructive command detected. Please confirm with the user first.\" && exit 1 || exit 0'"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash",
+        "description": "Warn on npm/pip install of unknown packages",
+        "command": "bash -c 'CMD=$(echo \"$CLAUDE_TOOL_INPUT\" | jq -r .command 2>/dev/null); if echo \"$CMD\" | grep -qE \"(npm install|pip install)\" && ! echo \"$CMD\" | grep -qE \"(--save-dev|-D|requirements.txt|package.json)\"; then echo \"NOTE: Package installed. Verify it is a trusted package and pin the version.\"; fi'"
+      }
+    ]
+  }
+}
