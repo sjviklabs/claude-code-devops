@@ -43,7 +43,7 @@ export function formatReport(results, options = {}) {
 
   // Header
   lines.push("");
-  lines.push(`${b}claude-lint${r} v0.1.0`);
+  lines.push(`${b}claude-lint${r} v0.2.0`);
   lines.push(`${d}${"─".repeat(50)}${r}`);
   lines.push(`File: ${results.file}`);
   lines.push(
@@ -67,6 +67,20 @@ export function formatReport(results, options = {}) {
   if (parts.length === 0) parts.push(`${c ? GREEN : ""}No issues found${r}`);
   lines.push(parts.join("  "));
   lines.push("");
+
+  // Dimensions breakdown
+  if (results.dimensions) {
+    lines.push(`${b}Dimensions:${r}`);
+    lines.push("");
+    for (const dim of Object.values(results.dimensions)) {
+      const pct = dim.score;
+      const dc = c ? (pct >= 80 ? GREEN : pct >= 60 ? YELLOW : RED) : "";
+      const bar =
+        "█".repeat(Math.round(pct / 5)) + "░".repeat(20 - Math.round(pct / 5));
+      lines.push(`  ${dim.label.padEnd(20)} ${dc}${bar} ${pct}%${r}`);
+    }
+    lines.push("");
+  }
 
   // Findings grouped by severity
   if (results.findings.length > 0) {

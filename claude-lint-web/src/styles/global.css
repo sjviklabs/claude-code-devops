@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Primary: Bright Emerald ── */
+  --color-emerald: #4edea3;
+  --color-emerald-deep: #10b981;
+  --color-emerald-glow: rgba(78, 222, 163, 0.2);
+
+  /* ── Accent: Warm Amber ── */
+  --color-amber: #ffb690;
+  --color-amber-deep: #ff7e2d;
+
+  /* ── Surfaces: Material 3 layers ── */
+  --color-base: #0b1326;
+  --color-lowest: #060e20;
+  --color-layer-1: #171f33;
+  --color-layer-2: #222a3d;
+  --color-layer-3: #2d3449;
+  --color-bright: #31394d;
+
+  /* ── Text ── */
+  --color-text-primary: #dae2fd;
+  --color-text-variant: #bbcabf;
+  --color-text-outline: #86948a;
+  --color-text-dim: #3c4a42;
+
+  /* ── Semantic ── */
+  --color-error: #ffb4ab;
+  --color-warning: #ffb690;
+  --color-info: #b9c7df;
+  --color-secondary: #b9c7df;
+  --color-ok: #4edea3;
+
+  /* ── Typography ── */
+  --font-display: "Outfit", "Arial", sans-serif;
+  --font-body: "Inter Tight", "Helvetica Neue", sans-serif;
+  --font-mono: "JetBrains Mono", "Cascadia Code", monospace;
+}
+
+/* ── Glass panels ── */
+.glass {
+  background: rgba(23, 31, 51, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ── CTA gradient ── */
+.cta-gradient {
+  background: linear-gradient(135deg, #4edea3 0%, #10b981 100%);
+}
+
+/* ── Emerald glow ── */
+.emerald-glow {
+  box-shadow: 0 0 15px rgba(78, 222, 163, 0.2);
+}
+
+/* ── Ghost border ── */
+.ghost-border {
+  outline: 1px solid rgba(134, 148, 138, 0.15);
+}
+
+/* ── Score animation ── */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+.score-reveal {
+  animation: countUp 0.4s ease-out;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-lowest);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-bright);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-outline);
+}

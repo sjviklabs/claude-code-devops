@@ -3,9 +3,18 @@ import { detectCredentialLeaks } from "./rules/credential-leaks.js";
 import { flagVagueRules } from "./rules/vague-rules.js";
 import { scoreSectionCoverage } from "./rules/section-coverage.js";
 import { checkLineCount } from "./rules/line-count.js";
+import { scoreClaritySpecificity } from "./rules/clarity-score.js";
+import { detectConflicts } from "./rules/conflict-detection.js";
+import { scoreEnforceability } from "./rules/enforceability.js";
+import { detectBloat } from "./rules/bloat-detection.js";
+import { checkConsistency } from "./rules/consistency.js";
 
 /**
  * Lint a CLAUDE.md file and return a scored report.
+ *
+ * v2 scoring: weighted multi-dimensional analysis across 8 dimensions.
+ * No single dimension dominates. A file must be good across the board.
+ *
  * @param {string} content - Raw file contents
  * @param {string} filePath - Path to the file (for display)
  * @returns {object} Lint results with score, findings, and metadata
@@ -18,35 +27,154 @@ export function lint(content, filePath) {
   const budget = analyzeInstructionBudget(content, lines);
   const credentials = detectCredentialLeaks(content, lines);
   const vague = flagVagueRules(content, lines);
-  const coverage = scoreSectionCoverage(content, lines);
+  const coverage = scoreSectionCoverage(content, lines, filePath);
   const lineCount = checkLineCount(lines);
+  const clarity = scoreClaritySpecificity(content, lines);
+  const conflicts = detectConflicts(content, lines);
+  const enforceability = scoreEnforceability(content, lines);
+  const bloat = detectBloat(content, lines);
+  const consistency = checkConsistency(content, lines);
 
+  // Collect all findings
   findings.push(...budget.findings);
   findings.push(...credentials.findings);
   findings.push(...vague.findings);
   findings.push(...coverage.findings);
   findings.push(...lineCount.findings);
+  findings.push(...clarity.findings);
+  findings.push(...conflicts.findings);
+  findings.push(...enforceability.findings);
+  findings.push(...bloat.findings);
+  findings.push(...consistency.findings);
 
-  // Calculate overall score (0-100)
-  // Start at 100, deduct for issues
-  let score = 100;
+  // === Weighted Multi-Dimensional Scoring ===
+  //
+  // Each dimension scores 0-100 internally, then gets weighted.
+  // Total score = weighted average across all dimensions.
+  //
+  // Dimensions and weights:
+  //   Structure      (10%) — sections, headings, organization
+  //   Clarity        (20%) — specificity, actionability of instructions
+  //   Security       (15%) — credentials, exposure
+  //   Completeness   (12%) — coverage of recommended sections
+  //   Consistency    (8%)  — formatting, terminology
+  //   Efficiency     (15%) — line count, bloat, signal/noise
+  //   Enforceability (10%) — hookable rules identified
+  //   Instruction Budget (10%) — within the ~175 instruction limit
 
-  // Critical issues (credential leaks) are -20 each, capped at -60
-  const criticalCount = findings.filter(
-    (f) => f.severity === "critical",
+  const dimensions = {};
+
+  // Structure (10%): based on section coverage presence + heading structure
+  dimensions.structure = {
+    score: coverage.coveragePercent,
+    weight: 10,
+    label: "Structure",
+  };
+
+  // Clarity (20%): from clarity scorer
+  dimensions.clarity = {
+    score: Math.min(100, clarity.clarityPercent || 50),
+    weight: 20,
+    label: "Clarity",
+  };
+
+  // Security (15%): 100 if no credential leaks, drops sharply
+  const credentialFindings = findings.filter(
+    (f) => f.rule === "credential-leak",
   ).length;
-  score -= Math.min(criticalCount * 20, 60);
+  dimensions.security = {
+    score:
+      credentialFindings === 0
+        ? 100
+        : Math.max(0, 100 - credentialFindings * 30),
+    weight: 15,
+    label: "Security",
+  };
 
-  // Warnings are -5 each, capped at -30
-  const warningCount = findings.filter((f) => f.severity === "warning").length;
-  score -= Math.min(warningCount * 5, 30);
+  // Completeness (12%): section coverage percentage
+  dimensions.completeness = {
+    score: coverage.coveragePercent,
+    weight: 12,
+    label: "Completeness",
+  };
 
-  // Info items are -2 each, capped at -10
-  const infoCount = findings.filter((f) => f.severity === "info").length;
-  score -= Math.min(infoCount * 2, 10);
+  // Consistency (8%): 100 minus deductions for inconsistencies
+  dimensions.consistency = {
+    score: Math.max(0, 100 - consistency.inconsistencyCount * 15),
+    weight: 8,
+    label: "Consistency",
+  };
 
-  // Bonus for good coverage (up to +10)
-  score += coverage.bonus || 0;
+  // Efficiency (15%): based on line count sweet spot + bloat
+  const lineScore =
+    lines.length < 20
+      ? 30
+      : lines.length < 60
+        ? 60
+        : lines.length <= 300
+          ? 100
+          : lines.length <= 500
+            ? 70
+            : 40;
+  const bloatPenalty = Math.min(30, bloat.bloatCount * 10);
+  dimensions.efficiency = {
+    score: Math.max(0, lineScore - bloatPenalty),
+    weight: 15,
+    label: "Efficiency",
+  };
+
+  // Enforceability (10%): lower if many hookable rules aren't hooks
+  const enforceScore =
+    enforceability.hookableCount === 0
+      ? 100
+      : enforceability.hookableCount <= 2
+        ? 85
+        : enforceability.hookableCount <= 4
+          ? 70
+          : 50;
+  dimensions.enforceability = {
+    score: enforceScore,
+    weight: 10,
+    label: "Enforceability",
+  };
+
+  // Instruction Budget (10%): based on staying within limits
+  const totalLoad = (budget.instructionCount || 0) + 50;
+  const budgetRatio = totalLoad / 175;
+  const budgetScore =
+    budgetRatio <= 0.8
+      ? 100
+      : budgetRatio <= 1.0
+        ? 80
+        : budgetRatio <= 1.2
+          ? 60
+          : 30;
+  dimensions.budget = {
+    score: budgetScore,
+    weight: 10,
+    label: "Instruction Budget",
+  };
+
+  // Conflict penalty: conflicts directly reduce overall score
+  const conflictPenalty = conflicts.conflictCount * 5;
+
+  // Vague rule penalty
+  const vagueFindings = findings.filter((f) => f.rule === "vague-rule").length;
+  const vaguePenalty = Math.min(10, vagueFindings * 2);
+
+  // Calculate weighted score
+  let totalWeight = 0;
+  let weightedSum = 0;
+  for (const dim of Object.values(dimensions)) {
+    totalWeight += dim.weight;
+    weightedSum += dim.score * dim.weight;
+  }
+
+  let score = Math.round(weightedSum / totalWeight);
+
+  // Apply penalties
+  score -= conflictPenalty;
+  score -= vaguePenalty;
 
   score = Math.max(0, Math.min(100, score));
 
@@ -57,10 +185,11 @@ export function lint(content, filePath) {
     lineCount: lines.length,
     instructionCount: budget.instructionCount,
     findings: findings.sort(severityOrder),
+    dimensions,
     summary: {
-      critical: criticalCount,
-      warning: warningCount,
-      info: infoCount,
+      critical: findings.filter((f) => f.severity === "critical").length,
+      warning: findings.filter((f) => f.severity === "warning").length,
+      info: findings.filter((f) => f.severity === "info").length,
     },
   };
 }

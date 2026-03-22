@@ -1,0 +1,41 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+const { title, description = 'Free tool to score your CLAUDE.md for instruction budget, credential leaks, and vague rules. From SJVIK Labs.' } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  <meta name="description" content={description} />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="claude-lint | Score Your CLAUDE.md" />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://lint.stevenjvik.tech" />
+  <meta property="og:image" content="https://lint.stevenjvik.tech/og-image.png" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="claude-lint | Score Your CLAUDE.md" />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content="https://lint.stevenjvik.tech/og-image.png" />
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet" />
+</head>
+<body class="bg-base text-text-primary font-body min-h-screen">
+  <slot />
+</body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>

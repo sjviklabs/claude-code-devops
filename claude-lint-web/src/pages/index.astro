@@ -1,0 +1,233 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+<Layout title="claude-lint | Score Your CLAUDE.md">
+  <main class="max-w-3xl mx-auto px-4 py-8 md:py-16">
+    <!-- Header -->
+    <header class="mb-8 text-center">
+      <p class="font-mono text-sm text-emerald tracking-wider mb-2">SJVIK Labs</p>
+      <h1 class="font-display text-4xl md:text-5xl font-bold mb-3">claude-lint</h1>
+      <p class="text-text-variant text-lg max-w-xl mx-auto">
+        Score your CLAUDE.md across 8 dimensions: clarity, security, structure, consistency, enforceability, and more.
+      </p>
+      <p class="text-text-outline text-sm mt-2">Your content never leaves your browser.</p>
+    </header>
+
+    <!-- Editor -->
+    <section class="glass ghost-border rounded-lg p-4 md:p-6 mb-4">
+      <div class="flex items-center justify-between mb-3">
+        <label for="editor" class="font-mono text-sm text-text-variant">CLAUDE.md</label>
+        <button id="sample-btn" class="text-xs text-emerald hover:text-emerald-deep transition-colors cursor-pointer font-mono">
+          Try sample
+        </button>
+      </div>
+      <textarea
+        id="editor"
+        class="w-full h-64 md:h-80 bg-lowest text-text-primary font-mono text-sm p-4 rounded resize-none focus:outline-none focus:ring-1 focus:ring-emerald/30 placeholder:text-text-dim"
+        placeholder="Paste your CLAUDE.md content here..."
+        spellcheck="false"
+      ></textarea>
+      <div class="flex items-center gap-3 mt-4">
+        <button id="lint-btn" class="cta-gradient text-base font-display font-semibold px-6 py-2.5 rounded cursor-pointer hover:opacity-90 transition-opacity">
+          Score My CLAUDE.md
+        </button>
+        <button id="clear-btn" class="bg-layer-2 hover:bg-bright text-text-variant text-sm font-mono px-4 py-2.5 rounded cursor-pointer transition-colors hidden">
+          Clear
+        </button>
+        <span id="status" class="text-text-outline text-sm"></span>
+      </div>
+    </section>
+
+    <!-- Results (hidden until scored) -->
+    <section id="results" class="hidden">
+      <!-- Score card -->
+      <div class="glass ghost-border rounded-lg p-6 mb-4 text-center">
+        <div class="score-reveal">
+          <div class="flex items-center justify-center gap-3 mb-2">
+            <span id="score-num" class="font-display text-6xl font-bold"></span>
+            <span class="text-text-outline text-2xl">/100</span>
+            <span id="score-grade" class="font-display text-4xl font-bold ml-2"></span>
+          </div>
+          <div id="summary-bar" class="flex items-center justify-center gap-4 text-sm"></div>
+        </div>
+      </div>
+
+      <!-- Dimensions breakdown -->
+      <div id="dimensions" class="glass ghost-border rounded-lg p-4 md:p-6 mb-4">
+        <h2 class="font-display text-lg font-semibold mb-3">Dimensions</h2>
+        <div id="dimensions-list"></div>
+      </div>
+
+      <!-- Findings -->
+      <div class="glass ghost-border rounded-lg p-4 md:p-6 mb-4">
+        <h2 class="font-display text-lg font-semibold mb-3">Findings</h2>
+        <div id="findings-list" class="divide-y divide-bright/30"></div>
+      </div>
+
+      <!-- Upsell banner -->
+      <div id="upsell" class="glass ghost-border rounded-lg p-6 mb-4">
+        <h3 id="upsell-heading" class="font-display text-lg font-semibold mb-2"></h3>
+        <p id="upsell-body" class="text-text-variant text-sm mb-4"></p>
+        <a id="upsell-link" href="#" target="_blank" rel="noopener" class="cta-gradient inline-block text-base font-display font-semibold px-6 py-2.5 rounded hover:opacity-90 transition-opacity no-underline">
+          <span id="upsell-cta"></span> &rarr;
+        </a>
+      </div>
+
+      <!-- Share -->
+      <div class="flex flex-wrap items-center gap-3">
+        <button id="share-twitter" class="bg-layer-2 hover:bg-bright text-text-primary text-sm font-mono px-4 py-2 rounded cursor-pointer transition-colors">
+          Share on X
+        </button>
+        <button id="share-linkedin" class="bg-layer-2 hover:bg-bright text-text-primary text-sm font-mono px-4 py-2 rounded cursor-pointer transition-colors">
+          Share on LinkedIn
+        </button>
+        <button id="share-copy" class="bg-layer-2 hover:bg-bright text-text-primary text-sm font-mono px-4 py-2 rounded cursor-pointer transition-colors">
+          Copy result
+        </button>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="mt-12 pt-6 text-center text-text-outline text-xs">
+      <p>
+        Also available as CLI:
+        <code class="font-mono text-emerald bg-layer-1 px-1.5 py-0.5 rounded">npx @sjviklabs/claude-lint</code>
+      </p>
+      <p class="mt-2">
+        Built by <a href="https://github.com/sjviklabs/claude-code-devops" class="text-emerald hover:underline">Forge</a> at SJVIK Labs
+      </p>
+    </footer>
+  </main>
+</Layout>
+
+<script>
+  import { lint } from '@claude-lint/index.js';
+  import { formatFindings, formatDimensions, getUpsellTier, gumroadUrl, shareText } from '../lib/web-formatter.js';
+
+  const SAMPLE_CLAUDE_MD = `# CLAUDE.md
+
+## Project Overview
+This is a sample project. Be helpful and write clean code.
+
+## Rules
+- Follow best practices
+- Be careful with the code
+- Try to use common sense
+- Please be concise
+- Write good tests when appropriate
+- Consider using better patterns as needed
+
+## Credentials
+Database: postgres://admin:supersecret123@192.168.1.50:5432/myapp
+
+## Commands
+- npm test
+- npm run build
+
+export API_KEY=sk-proj-abc123def456ghi789
+`;
+
+  const editor = document.getElementById('editor');
+  const lintBtn = document.getElementById('lint-btn');
+  const clearBtn = document.getElementById('clear-btn');
+  const sampleBtn = document.getElementById('sample-btn');
+  const resultsSection = document.getElementById('results');
+  const statusEl = document.getElementById('status');
+
+  let lastResults = null;
+
+  function showClearBtn() {
+    clearBtn.classList.remove('hidden');
+  }
+
+  sampleBtn.addEventListener('click', () => {
+    editor.value = SAMPLE_CLAUDE_MD;
+    statusEl.textContent = 'Sample loaded. Hit Score.';
+    showClearBtn();
+  });
+
+  clearBtn.addEventListener('click', () => {
+    editor.value = '';
+    resultsSection.classList.add('hidden');
+    clearBtn.classList.add('hidden');
+    statusEl.textContent = '';
+    lastResults = null;
+  });
+
+  lintBtn.addEventListener('click', () => {
+    const content = editor.value.trim();
+    if (!content) {
+      statusEl.textContent = 'Paste your CLAUDE.md first.';
+      return;
+    }
+
+    const results = lint(content, 'CLAUDE.md');
+    lastResults = results;
+    renderResults(results);
+    showClearBtn();
+  });
+
+  function renderResults(r) {
+    resultsSection.classList.remove('hidden');
+
+    // Score + grade
+    const scoreEl = document.getElementById('score-num');
+    const gradeEl = document.getElementById('score-grade');
+
+    scoreEl.textContent = r.score;
+    gradeEl.textContent = r.grade;
+
+    // Color the score
+    const colorClass = (r.grade === 'A' || r.grade === 'B') ? 'text-emerald'
+      : (r.grade === 'C' || r.grade === 'D') ? 'text-amber' : 'text-error';
+    scoreEl.className = `font-display text-6xl font-bold ${colorClass}`;
+    gradeEl.className = `font-display text-4xl font-bold ml-2 ${colorClass}`;
+
+    // Summary bar
+    const summaryEl = document.getElementById('summary-bar');
+    const parts = [];
+    if (r.summary.critical) parts.push(`<span class="text-error">${r.summary.critical} critical</span>`);
+    if (r.summary.warning) parts.push(`<span class="text-amber">${r.summary.warning} warnings</span>`);
+    if (r.summary.info) parts.push(`<span class="text-info">${r.summary.info} info</span>`);
+    summaryEl.innerHTML = parts.length ? parts.join('<span class="text-text-dim">&middot;</span>') : '<span class="text-emerald">No issues</span>';
+
+    // Dimensions
+    document.getElementById('dimensions-list').innerHTML = formatDimensions(r.dimensions);
+
+    // Findings
+    document.getElementById('findings-list').innerHTML = formatFindings(r.findings);
+
+    // Upsell
+    const tier = getUpsellTier(r.score);
+    document.getElementById('upsell-heading').textContent = tier.heading;
+    document.getElementById('upsell-body').textContent = tier.body;
+    document.getElementById('upsell-cta').textContent = tier.cta;
+    document.getElementById('upsell-link').href = gumroadUrl(r.score);
+
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    statusEl.textContent = '';
+  }
+
+  // Share buttons
+  document.getElementById('share-twitter').addEventListener('click', () => {
+    if (!lastResults) return;
+    const text = shareText(lastResults.score, lastResults.grade);
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`, '_blank');
+  });
+
+  document.getElementById('share-linkedin').addEventListener('click', () => {
+    if (!lastResults) return;
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent('https://lint.stevenjvik.tech')}`, '_blank');
+  });
+
+  document.getElementById('share-copy').addEventListener('click', () => {
+    if (!lastResults) return;
+    const text = shareText(lastResults.score, lastResults.grade);
+    navigator.clipboard.writeText(text).then(() => {
+      document.getElementById('share-copy').textContent = 'Copied!';
+      setTimeout(() => { document.getElementById('share-copy').textContent = 'Copy result'; }, 2000);
+    });
+  });
+</script>

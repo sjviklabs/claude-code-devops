@@ -6,6 +6,8 @@ Not theory. These are the actual configs behind [SJVIK Labs](https://github.com/
 
 ## Lint Your CLAUDE.md
 
+[![Try online](https://img.shields.io/badge/try%20online-lint.stevenjvik.tech-4edea3?style=for-the-badge)](https://lint.stevenjvik.tech)
+
 Score your existing CLAUDE.md for instruction budget, credential leaks, vague rules, and section coverage:
 
 ```bash
@@ -17,6 +19,8 @@ Or point it at a specific file:
 ```bash
 npx @sjviklabs/claude-lint ./CLAUDE.md
 ```
+
+Or use the [web version](https://lint.stevenjvik.tech) — paste your CLAUDE.md, get a score instantly. No install, no data leaves your browser.
 
 Outputs a scored report (0-100) with actionable findings. Exit code 1 if score < 40.
 
