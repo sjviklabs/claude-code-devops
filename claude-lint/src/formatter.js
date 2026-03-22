@@ -43,7 +43,8 @@ export function formatReport(results, options = {}) {
 
   // Header
   lines.push("");
-  lines.push(`${b}claude-lint${r} v0.2.0`);
+  const version = results.version || "0.2.0";
+  lines.push(`${b}claude-lint${r} v${version}`);
   lines.push(`${d}${"─".repeat(50)}${r}`);
   lines.push(`File: ${results.file}`);
   lines.push(
@@ -104,7 +105,9 @@ export function formatReport(results, options = {}) {
     lines.push(`${b}Want to fix these?${r}`);
     lines.push(`The Claude Code Field Manual covers CLAUDE.md architecture,`);
     lines.push(`instruction budgeting, and security patterns in depth.`);
-    lines.push(`https://stevenjvik.gumroad.com/l/qdjszj`);
+    lines.push(
+      `https://stevenjvik.gumroad.com/l/qdjszj?utm_source=claude-lint-cli&utm_medium=tool&utm_campaign=score-${results.score}`,
+    );
     lines.push("");
   }
 

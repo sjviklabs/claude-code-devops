@@ -180,6 +180,7 @@ export function lint(content, filePath) {
 
   return {
     file: filePath,
+    version: "0.2.0",
     score,
     grade: scoreToGrade(score),
     lineCount: lines.length,
