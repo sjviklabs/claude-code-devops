@@ -38,7 +38,7 @@ const BLOAT_PATTERNS = [
   {
     name: "install_instructions",
     pattern:
-      /\b(?:npm install|pip install|yarn add|cargo add|gem install|brew install)\b/i,
+      /\b(?:npm install|pip install|yarn add|cargo add|gem install|brew install|pnpm add|bun add|deno install)\b/i,
     suggestion: "Installation steps belong in README.md, not CLAUDE.md",
     category: "readme",
   },

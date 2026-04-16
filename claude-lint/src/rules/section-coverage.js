@@ -95,6 +95,43 @@ const RECOMMENDED_SECTIONS = [
     whyGlobal:
       "Global configs should define communication style across all projects",
   },
+  {
+    name: "Hooks / Automation",
+    patterns: [
+      /^#+\s*(?:\w+\s+)*(hooks?|automation|settings\.json|pre-?tool|post-?tool)/im,
+      /\b(?:PreToolUse|PostToolUse|PreToolResult|PostToolResult|Notification)\b/,
+      /\.claude\/settings\.json/,
+    ],
+    weight: 1,
+    scope: "both",
+    weightGlobal: 2,
+    why: "Documents which guardrails are enforced by hooks vs instructions",
+    whyGlobal:
+      "Global configs should reference hook-enforced rules in .claude/settings.json",
+  },
+  {
+    name: "MCP Servers",
+    patterns: [
+      /^#+\s*(?:\w+\s+)*(mcp|model context protocol|servers?|integrations?)/im,
+      /\bmcp[_-]?server/i,
+      /\bMCP\b/,
+    ],
+    weight: 1,
+    scope: "both",
+    why: "Documents available MCP servers and their capabilities",
+  },
+  {
+    name: "Skills / Agents",
+    patterns: [
+      /^#+\s*(?:\w+\s+)*(skills?|agents?|subagents?|workflows?)/im,
+      /\bskill\b.*\bslash\b/i,
+      /\bagent.*type/i,
+    ],
+    weight: 1,
+    scope: "both",
+    weightGlobal: 1,
+    why: "Documents custom skills or agent configurations available in the project",
+  },
 ];
 
 /**

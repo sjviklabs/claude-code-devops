@@ -53,7 +53,7 @@ export function lint(content, filePath) {
   // Total score = weighted average across all dimensions.
   //
   // Dimensions and weights:
-  //   Structure      (10%) — sections, headings, organization
+  //   Structure      (10%) — heading organization, nesting depth
   //   Clarity        (20%) — specificity, actionability of instructions
   //   Security       (15%) — credentials, exposure
   //   Completeness   (12%) — coverage of recommended sections
@@ -64,9 +64,20 @@ export function lint(content, filePath) {
 
   const dimensions = {};
 
-  // Structure (10%): based on section coverage presence + heading structure
+  // Structure (10%): heading organization, nesting, section depth
+  // Measures HOW WELL the file is organized (separate from WHAT it covers)
+  const headingCount = lines.filter((l) => /^#{1,4}\s+\S/.test(l)).length;
+  const hasNestedHeadings = lines.some((l) => /^#{2,4}\s+\S/.test(l));
+  const hasTopLevel = lines.some((l) => /^#\s+\S/.test(l));
+  let structureScore = 0;
+  if (headingCount >= 4 && hasNestedHeadings && hasTopLevel)
+    structureScore = 100;
+  else if (headingCount >= 3 && hasNestedHeadings) structureScore = 85;
+  else if (headingCount >= 2) structureScore = 65;
+  else if (headingCount >= 1) structureScore = 40;
+  else structureScore = 15;
   dimensions.structure = {
-    score: coverage.coveragePercent,
+    score: structureScore,
     weight: 10,
     label: "Structure",
   };
@@ -180,7 +191,7 @@ export function lint(content, filePath) {
 
   return {
     file: filePath,
-    version: "0.2.0",
+    version: "0.3.0",
     score,
     grade: scoreToGrade(score),
     lineCount: lines.length,

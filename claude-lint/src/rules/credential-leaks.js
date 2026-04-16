@@ -56,6 +56,43 @@ const CREDENTIAL_PATTERNS = [
     pattern:
       /(?:export\s+)?(?:API_KEY|SECRET_KEY|ACCESS_TOKEN|AUTH_TOKEN|DB_PASSWORD|DATABASE_URL)\s*=\s*['"]?[^\s'"]{8,}/gi,
   },
+  {
+    name: "Anthropic API Key",
+    pattern: /sk-ant-[A-Za-z0-9_\-]{20,}/g,
+  },
+  {
+    name: "OpenAI API Key",
+    pattern: /sk-[A-Za-z0-9]{20,}/g,
+  },
+  {
+    name: "HuggingFace Token",
+    pattern: /hf_[A-Za-z0-9]{20,}/g,
+  },
+  {
+    name: "Google Service Account Key",
+    pattern: /"private_key":\s*"-----BEGIN/g,
+  },
+  {
+    name: "Firebase/GCP Client ID",
+    pattern: /\d{12}-[a-z0-9]{32}\.apps\.googleusercontent\.com/g,
+  },
+  {
+    name: "Supabase Key",
+    pattern: /sbp_[A-Za-z0-9]{40,}/g,
+  },
+  {
+    name: "Vercel Token",
+    pattern: /vercel_[A-Za-z0-9_\-]{20,}/gi,
+  },
+  {
+    name: "D-ID API Key",
+    pattern: /[A-Za-z0-9+/=]{20,}:[A-Za-z0-9_\-]{20,}/g,
+  },
+  {
+    name: "fal.ai API Key",
+    pattern:
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{20,}/g,
+  },
 ];
 
 // Patterns that are OK (examples, placeholders)

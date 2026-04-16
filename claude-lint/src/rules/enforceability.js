@@ -77,6 +77,27 @@ const HOOKABLE_PATTERNS = [
     suggestion:
       "Use a linter rule (e.g., ESLint max-lines) instead of CLAUDE.md instruction",
   },
+  {
+    name: "no_deploy",
+    pattern: /\b(?:never|don't|do not).*(?:deploy|release|publish|upload)\b/i,
+    hookType: "PreToolUse (Bash)",
+    suggestion: "Add a hook that blocks deploy/publish commands",
+  },
+  {
+    name: "no_delete_files",
+    pattern:
+      /\b(?:never|don't|do not).*(?:delete|remove|rm)\s+(?:files?|directories?|folders?)\b/i,
+    hookType: "PreToolUse (Bash)",
+    suggestion:
+      "Add a PreToolUse hook that blocks rm/delete operations on protected paths",
+  },
+  {
+    name: "require_tests",
+    pattern: /\b(?:always|must).*(?:run|write|add).*test/i,
+    hookType: "Notification",
+    suggestion:
+      "Add a Notification hook that reminds to run tests after code changes",
+  },
 ];
 
 function isInCodeBlock(lines, lineNum) {

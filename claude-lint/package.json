@@ -1,6 +1,6 @@
 {
   "name": "@sjviklabs/claude-lint",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Score your CLAUDE.md across 8 dimensions: clarity, security, structure, consistency, enforceability, and more",
   "bin": {
     "claude-lint": "bin/claude-lint.js"

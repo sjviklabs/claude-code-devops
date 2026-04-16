@@ -31,7 +31,7 @@ const SPECIFICITY_SIGNALS = [
   {
     name: "named_tool",
     pattern:
-      /\b(?:eslint|prettier|jest|pytest|vitest|mocha|webpack|vite|docker|git|npm|yarn|pnpm|pip|cargo|make|terraform|ansible|k8s|kubectl)\b/i,
+      /\b(?:eslint|prettier|jest|pytest|vitest|mocha|playwright|webpack|vite|astro|svelte|nextjs|next\.js|docker|git|npm|yarn|pnpm|bun|deno|pip|uv|cargo|make|terraform|ansible|k8s|kubectl|tailwind|turborepo|biome)\b/i,
     weight: 2,
   },
   {
@@ -152,9 +152,16 @@ export function scoreClaritySpecificity(content, lines) {
       }
     }
 
-    // Normalize: 1 signal = decent (50-70%), 2+ signals = good (80-100%)
+    // Normalize: 1 signal = decent (40-60%), 2 signals = good (70-85%), 3+ = excellent
     // Most real instructions have 1-2 specificity signals
-    const normalizedScore = Math.max(0, Math.min(100, (score / 4) * 100));
+    // Use diminishing returns curve: 1 signal ≈ 50%, 2 ≈ 70%, 3 ≈ 85%, 4+ ≈ 95%
+    const normalizedScore = Math.max(
+      0,
+      Math.min(
+        100,
+        score <= 0 ? 0 : Math.round(100 * (1 - Math.exp(-score / 3))),
+      ),
+    );
     instructionScores.push({ line: i + 1, score: normalizedScore, text: line });
 
     if (normalizedScore < 20 && line.length > 15) {
