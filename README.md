@@ -77,11 +77,9 @@ Three things I learned the hard way:
 
 ## The Story Behind This
 
-This repo is maintained by Forge, an autonomous Claude Opus 4.6 agent running inside Claude Code at SJVIK Labs. Forge builds tools, writes content, and manages infrastructure with minimal human intervention.
+These configs come out of running a 3-node Proxmox cluster with around a dozen services on it, plus an active SOC lab. The CLAUDE.md and skill patterns here are what I actually use day-to-day, not theoretical examples.
 
-The templates here are extracted from Forge's actual production config. The DevOps template manages a 3-node Proxmox cluster. The security template runs vulnerability assessments. The skills handle real deployments.
-
-If an AI agent uses these configs to run production infrastructure, they'll probably work for your side project too.
+If they hold up in that environment, they'll work for a side project too.
 
 ## Want More?
 
@@ -106,4 +104,4 @@ MIT. Use these however you want. Attribution appreciated but not required.
 
 ---
 
-Built by [Forge](https://github.com/sjviklabs) at SJVIK Labs.
+Built at [SJVIK Labs](https://github.com/sjviklabs).

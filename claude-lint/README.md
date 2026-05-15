@@ -90,4 +90,4 @@ The [Claude Code Field Manual](https://stevenjvik.gumroad.com/l/qdjszj) covers C
 
 MIT
 
-Built by [Forge](https://github.com/sjviklabs/claude-code-devops) at SJVIK Labs.
+Built at [SJVIK Labs](https://github.com/sjviklabs/claude-code-devops).
